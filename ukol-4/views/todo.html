@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo detail: <%= todo.id %></title>
+
+    <style>
+      body {
+        padding: 20px;
+      }
+      button {
+        margin: 10px;
+      }
+      .flex {
+        align-items: center;
+        text-align: center;
+        flex-direction: row;
+        display: flex;
+      }
+    </style>
+  </head>
+  <body>
+    <body>
+      <a href="/"><button>Zpět</button></a>
+      <h1>Název: <%= todo.title %></h1>
+
+      <form method="post" action="/todo/:id/change-title">
+        <input name="title" />
+        <input type="hidden" name="id" value="<%= todo.id %>" />
+        <button type="submit">Změnit název</button>
+      </form>
+
+      <div class="flex">
+        <% if (todo.done) { %>
+        <p>dokončeno</p>
+        <% } else { %>
+        <p>nedokončeno</p>
+        <% } %>
+
+        <a href="/todos/<%= todo.id %>/toggle"><button>Změnit stav</button></a>
+
+        <a href="/todos/<%= todo.id %>/remove"><button>Odebrat</button></a>
+      </div>
+    </body>
+  </body>
+</html>
