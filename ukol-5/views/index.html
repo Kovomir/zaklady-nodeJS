@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Document</title>
+
+    <style>
+      body {
+        padding: 20px;
+      }
+      button {
+        margin: 10px;
+      }
+      li {
+        margin: 10px 0px 0px 0px;
+      }
+
+      .priority {
+        color: white;
+        padding: 3px 5px;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+
+      .priority.low {
+        background-color: green;
+      }
+
+      .priority.medium {
+        background-color: orange;
+      }
+
+      .priority.high {
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><%= title.toUpperCase() %></h1>
+
+    <ul>
+      <% for (const todo of todos) { %>
+      <li class="flex">
+        <a href="/todos/<%= todo.id %>">
+          <%= todo.title %>
+        </a>
+        -
+        <span class="priority <%= todo.priority %>">
+          <%= todo.priority %></span
+        >
+        - <% if (todo.done) { %>
+        <a href="/todos/<%= todo.id %>/toggle">dokončeno</a>
+        <a href="/todos/<%= todo.id %>/remove">odebrat</a>
+        <% } else { %>
+        <a href="/todos/<%= todo.id %>/toggle">
+          nedokončeno
+        </a>
+        <% } %>
+      </li>
+      <% } %>
+    </ul>
+
+    <form method="post" action="/todos">
+      <input name="title" />
+      <button type="submit">Přidat todo</button>
+    </form>
+  </body>
+</html>
