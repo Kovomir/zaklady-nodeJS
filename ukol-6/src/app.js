@@ -2,19 +2,17 @@ import { Hono } from "hono"
 import { logger } from "hono/logger"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { renderFile } from "ejs"
-import { drizzle } from "drizzle-orm/libsql"
 import { todosTable } from "./schema.js"
 import { eq } from "drizzle-orm"
 import { createNodeWebSocket } from "@hono/node-ws"
 import { WSContext } from "hono/ws"
-
-export const db = drizzle({
-  connection:
-    process.env.NODE_ENV === "test"
-      ? "file::memory:"
-      : "file:db.sqlite",
-  logger: process.env.NODE_ENV !== "test",
-})
+import {
+  deleteTodoById,
+  updateTodo,
+  getTodoById,
+  db,
+  getAllTodos,
+} from "./db.js"
 
 export const app = new Hono()
 
@@ -25,7 +23,7 @@ app.use(logger())
 app.use(serveStatic({ root: "public" }))
 
 app.get("/", async (c) => {
-  const todos = await db.select().from(todosTable).all()
+  const todos = await getAllTodos()
 
   const index = await renderFile("views/index.html", {
     title: "My todo app",
@@ -70,14 +68,13 @@ app.post("/todos/:id", async (c) => {
   if (!todo) return c.notFound()
 
   const form = await c.req.formData()
+  const todoDto = {
+    title: form.get("title"),
+    priority: form.get("priority"),
+    id: id,
+  }
 
-  await db
-    .update(todosTable)
-    .set({
-      title: form.get("title"),
-      priority: form.get("priority"),
-    })
-    .where(eq(todosTable.id, id))
+  await updateTodo(todoDto)
 
   sendTodosToAllConnections()
   sendTodoDetailToAllConnections(id)
@@ -110,7 +107,7 @@ app.get("/todos/:id/remove", async (c) => {
 
   if (!todo) return c.notFound()
 
-  await db.delete(todosTable).where(eq(todosTable.id, id))
+  await deleteTodoById(id)
 
   sendTodosToAllConnections()
   sendTodoDeletedToAllConnections(id)
@@ -142,18 +139,8 @@ app.get(
   })
 )
 
-export const getTodoById = async (id) => {
-  const todo = await db
-    .select()
-    .from(todosTable)
-    .where(eq(todosTable.id, id))
-    .get()
-
-  return todo
-}
-
 const sendTodosToAllConnections = async () => {
-  const todos = await db.select().from(todosTable).all()
+  const todos = await getAllTodos()
 
   const rendered = await renderFile("views/_todos.html", {
     todos,
